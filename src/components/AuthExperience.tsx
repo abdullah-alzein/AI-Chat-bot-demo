@@ -67,11 +67,14 @@ export default function AuthExperience({
       })
       const result = (await response.json()) as {
         error?: string
+        code?: string
         requiresEmailConfirmation?: boolean
       }
 
       if (!response.ok) {
-        setError(result.error ?? 'Something went wrong. Please try again.')
+        const diagnosticCode =
+          result.code && result.code !== 'unknown' ? ` (Error code: ${result.code})` : ''
+        setError(`${result.error ?? 'Something went wrong. Please try again.'}${diagnosticCode}`)
         return
       }
 

@@ -9,6 +9,17 @@ export type AppUser = {
   email: string
 }
 
+export class SupabaseAuthError extends Error {
+  constructor(
+    message: string,
+    readonly code: string,
+    readonly status?: number,
+  ) {
+    super(message)
+    this.name = 'SupabaseAuthError'
+  }
+}
+
 function getSupabaseCredentials() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
@@ -95,7 +106,11 @@ export const appAuth = {
       },
     })
     if (error || !data.user) {
-      throw new Error(error?.message || 'Unable to create account.')
+      throw new SupabaseAuthError(
+        error?.message || 'Unable to create account.',
+        error && 'code' in error && typeof error.code === 'string' ? error.code : 'unknown',
+        error && 'status' in error && typeof error.status === 'number' ? error.status : undefined,
+      )
     }
 
     const user = toAppUser(data.user)
