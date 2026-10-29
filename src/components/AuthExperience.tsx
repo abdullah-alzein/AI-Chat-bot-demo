@@ -46,7 +46,8 @@ export default function AuthExperience({
     setError('')
     setNotice('')
 
-    const form = new FormData(event.currentTarget)
+    const formElement = event.currentTarget
+    const form = new FormData(formElement)
     if (isSignup && form.get('password') !== form.get('confirmPassword')) {
       setError('Those passwords don’t match.')
       return
@@ -78,7 +79,7 @@ export default function AuthExperience({
         setNotice(
           'Account created. Check your email and follow the confirmation link before signing in.',
         )
-        event.currentTarget.reset()
+        formElement.reset()
         return
       }
 
@@ -174,21 +175,6 @@ export default function AuthExperience({
                 />
               </label>
 
-              {isSignup && (
-                <label className="block">
-                  <span className="mb-2 block text-[12px] font-semibold">Confirm password</span>
-                  <input
-                    autoComplete="new-password"
-                    className="h-12 w-full rounded-xl border border-black/[0.09] bg-white/70 px-3.5 text-[14px] outline-none transition placeholder:text-black/25 focus:border-black/25 focus:bg-white focus:ring-4 focus:ring-black/[0.03]"
-                    minLength={8}
-                    name="confirmPassword"
-                    placeholder="Enter it once more"
-                    required
-                    type={showPassword ? 'text' : 'password'}
-                  />
-                </label>
-              )}
-
               <label className="block">
                 <span className="mb-2 flex items-center justify-between text-[12px] font-semibold">
                   Password
@@ -213,6 +199,21 @@ export default function AuthExperience({
                   </button>
                 </span>
               </label>
+
+              {isSignup && (
+                <label className="block">
+                  <span className="mb-2 block text-[12px] font-semibold">Confirm password</span>
+                  <input
+                    autoComplete="new-password"
+                    className="h-12 w-full rounded-xl border border-black/[0.09] bg-white/70 px-3.5 text-[14px] outline-none transition placeholder:text-black/25 focus:border-black/25 focus:bg-white focus:ring-4 focus:ring-black/[0.03]"
+                    minLength={8}
+                    name="confirmPassword"
+                    placeholder="Enter it once more"
+                    required
+                    type={showPassword ? 'text' : 'password'}
+                  />
+                </label>
+              )}
 
               {error && (
                 <div
