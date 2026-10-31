@@ -246,6 +246,8 @@ export default function LumaApp({ user }: { user: AppUser }) {
   const [loggingOut, setLoggingOut] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const profileMenuRef = useRef<HTMLDivElement>(null)
+  const modelMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     let active = true
@@ -342,6 +344,29 @@ export default function LumaApp({ user }: { user: AppUser }) {
     }, 90)
     return () => window.clearInterval(timer)
   }, [imageStatus, imagePrompt, variation])
+
+  useEffect(() => {
+    if (!profileOpen && !modelOpen) return
+
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      if (!(event.target instanceof Node)) return
+      if (profileOpen && !profileMenuRef.current?.contains(event.target)) setProfileOpen(false)
+      if (modelOpen && !modelMenuRef.current?.contains(event.target)) setModelOpen(false)
+    }
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setProfileOpen(false)
+        setModelOpen(false)
+      }
+    }
+
+    document.addEventListener('pointerdown', closeOnOutsidePointer)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsidePointer)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [profileOpen, modelOpen])
 
   const startResponse = async (prompt: string, addUser = true, files: Attachment[] = []) => {
     if (!historyLoaded || phase !== 'idle') return
@@ -640,7 +665,7 @@ export default function LumaApp({ user }: { user: AppUser }) {
           ))}
         </div>
 
-        <div className="relative mt-4">
+        <div ref={profileMenuRef} className="relative mt-4">
           {profileOpen && (
             <div className="absolute bottom-[calc(100%+8px)] left-0 w-full rounded-2xl border border-black/10 bg-white p-1.5 shadow-xl shadow-black/10">
               <div className="border-b border-black/[0.06] px-3 py-2.5">
@@ -649,7 +674,10 @@ export default function LumaApp({ user }: { user: AppUser }) {
               <button
                 className="mt-1 flex h-10 w-full items-center rounded-xl px-3 text-left text-[12px] font-medium text-black/60 hover:bg-black/[0.04] hover:text-black disabled:opacity-50"
                 disabled={loggingOut}
-                onClick={logout}
+                onClick={() => {
+                  setProfileOpen(false)
+                  void logout()
+                }}
               >
                 {loggingOut ? 'Signing out…' : 'Sign out'}
               </button>
@@ -657,6 +685,7 @@ export default function LumaApp({ user }: { user: AppUser }) {
           )}
           <button
             className="flex w-full items-center gap-3 rounded-xl p-2 hover:bg-white/50"
+            aria-expanded={profileOpen}
             onClick={() => setProfileOpen((value) => !value)}
           >
             <div className="grid h-9 w-9 place-items-center rounded-full bg-[#d8f43c] text-[12px] font-bold">
@@ -680,10 +709,11 @@ export default function LumaApp({ user }: { user: AppUser }) {
           >
             <MenuIcon className="h-5 w-5" />
           </button>
-          <div className="relative ml-auto lg:ml-0">
+          <div ref={modelMenuRef} className="relative ml-auto lg:ml-0">
             <button
               className="flex h-10 items-center gap-2 rounded-xl px-3 text-[13px] font-medium hover:bg-black/[0.04]"
-              onClick={() => setModelOpen(!modelOpen)}
+              aria-expanded={modelOpen}
+              onClick={() => setModelOpen((value) => !value)}
             >
               <span className="grid h-5 w-5 place-items-center rounded-md bg-[#171817] text-[#d8f43c]">
                 <SparkleIcon className="h-3.5 w-3.5" />
